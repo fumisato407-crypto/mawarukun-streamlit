@@ -1,4 +1,4 @@
-# Streamlit版：回転率計算アプリ（スマホ2列表示＋折りたたみ機能）
+# Streamlit版：回転率計算アプリ
 import streamlit as st
 import copy
 
@@ -25,7 +25,7 @@ def get_session():
 
 def backup():
     st.session_state.undo_stack.append(copy.deepcopy(get_session()))
-    st.session_state.redo_stack.clear()  # Undoした後に新しい操作をしたらRedo履歴は消す
+    st.session_state.redo_stack.clear()
 
 def add_rotation(rotation, yen):
     session = get_session()
@@ -73,7 +73,7 @@ def total_rate(session):
 
 # --- UI ---
 st.set_page_config(page_title="回転率計算アプリ", layout="wide")
-st.title("回転率計算アプリ（スマホ対応・Undo/Redo対応）")
+st.header("回転率計算アプリ")
 
 # ページ切り替え
 tab = st.selectbox("ページを選択（1〜5）", options=[1,2,3,4,5], index=0)
@@ -119,9 +119,10 @@ with st.expander("⚙️ 操作メニュー", expanded=True):
             restore_redo()
 
 # 結果表示
-st.markdown(f"**通算回転数：{total_rotation(session)} 回**")
-st.markdown(f"**通算回転率：{total_rate(session):.2f} 回/1000円**")
-st.markdown(f"**合計金額：{session['total_yen']} 円**")
+st.subheader("結果")
+st.text(f"通算回転数：{total_rotation(session)} 回")
+st.text(f"通算回転率：{total_rate(session):.2f} 回/1000円")
+st.text(f"合計金額：{session['total_yen']} 円")
 
 # 履歴表示
 with st.expander("📜 回転数履歴", expanded=True):
