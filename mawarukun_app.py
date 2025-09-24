@@ -1,4 +1,4 @@
-# Streamlit版：まわるくん風 回転率計算アプリ（Undo多段対応）
+# Streamlit版：まわるくん風 回転率計算アプリ（Undo多段 + 継続スタート修正）
 import streamlit as st
 import copy
 
@@ -32,10 +32,9 @@ def add_rotation(rotation, yen):
 
 def continue_from(rotation):
     session = get_session()
-    if session['history']:
-        session['history'].append((rotation, 0, 0))
-    else:
-        session['initial_rotation'] = rotation
+    prev_rotation = session['history'][-1][0] if session['history'] else session['initial_rotation']
+    diff = 0  # 継続スタートは加算なし
+    session['history'].append((rotation, 0, diff))
 
 def delete_row(index):
     session = get_session()
