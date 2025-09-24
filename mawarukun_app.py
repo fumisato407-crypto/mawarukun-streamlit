@@ -1,4 +1,4 @@
-# Streamlit版：まわるくん風 回転率計算アプリ（Undo多段 + 継続スタート修正）
+# Streamlit版：回転率計算アプリ（Undo多段 + 継続スタート修正）
 import streamlit as st
 import copy
 
@@ -36,10 +36,11 @@ def continue_from(rotation):
     diff = 0  # 継続スタートは加算なし
     session['history'].append((rotation, 0, diff))
 
-def delete_row(index):
+def delete_last_row():
     session = get_session()
-    removed = session['history'].pop(index)
-    session['total_yen'] -= removed[1]
+    if session['history']:
+        removed = session['history'].pop()
+        session['total_yen'] -= removed[1]
 
 def reset_session():
     st.session_state.sessions[st.session_state.current_page] = {
@@ -59,7 +60,7 @@ def total_rate(session):
     return total_rotation(session) / (session['total_yen'] / 1000) if session['total_yen'] else 0
 
 # --- UI部分 ---
-st.title("まわるくん風 回転率計算アプリ（Web版・Undo対応）")
+st.title("回転率計算アプリ（Web版・Undo対応）")
 
 # ページ切り替え
 tab = st.selectbox("ページを選択（1〜5）", options=[1,2,3,4,5], index=0)
@@ -84,10 +85,9 @@ with cols[1]:
         continue_from(rotation)
 
 with cols[2]:
-    idx = st.number_input("削除する行番号", min_value=1, max_value=len(session['history']) or 1, step=1)
-    if st.button("選択した補給を削除") and session['history']:
+    if st.button("最終行を削除") and session['history']:
         backup()
-        delete_row(idx - 1)
+        delete_last_row()
 
 with cols[3]:
     if st.button("履歴をすべてリセット"):
