@@ -1,4 +1,4 @@
-# Streamlit版：回転率計算アプリ（スマホ対応＋ラベル修正）
+# Streamlit版：回転率計算アプリ（スマホ対応＋ラベル修正＋履歴表現調整）
 import streamlit as st
 import copy
 
@@ -120,11 +120,11 @@ st.markdown(f"**通算回転率：{total_rate(session):.2f} 回/1000円**")
 st.markdown(f"**合計金額：{session['total_yen']} 円**")
 
 # 履歴表示
-st.subheader("補給履歴")
+st.subheader("回転数履歴")
 running_total = 0
 for i, (r, y, d) in enumerate(session['history']):
     running_total += d
     if y > 0:
-        st.write(f"{i+1}回目: +{d}回 / {y}円（通算: {running_total}回）")
+        st.write(f"{i+1}回目: {d}回 / {y}円（通算: {running_total}回）")
     else:
         st.write(f"{i+1}回目: 継続スタート（{r}回）")
