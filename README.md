@@ -1,2 +1,2 @@
 # mawarukun-streamlit
-「まわるくん回転率アプリWeb版」
+「回転率計算アプリWeb版」
