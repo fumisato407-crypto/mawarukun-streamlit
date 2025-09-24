@@ -1,5 +1,6 @@
-# Streamlit版：まわるくん風 回転率計算アプリ
+# Streamlit版：まわるくん風 回転率計算アプリ（Undo多段対応）
 import streamlit as st
+import copy
 
 # --- セッション管理 ---
 if 'sessions' not in st.session_state:
@@ -12,16 +13,15 @@ if 'sessions' not in st.session_state:
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 0
 
-if 'undo' not in st.session_state:
-    st.session_state.undo = None
+if 'undo_stack' not in st.session_state:
+    st.session_state.undo_stack = []
 
 # --- ヘルパー関数 ---
 def get_session():
     return st.session_state.sessions[st.session_state.current_page]
 
 def backup():
-    import copy
-    st.session_state.undo = copy.deepcopy(get_session())
+    st.session_state.undo_stack.append(copy.deepcopy(get_session()))
 
 def add_rotation(rotation, yen):
     session = get_session()
@@ -50,9 +50,8 @@ def reset_session():
     }
 
 def restore_undo():
-    if st.session_state.undo:
-        st.session_state.sessions[st.session_state.current_page] = st.session_state.undo
-        st.session_state.undo = None
+    if st.session_state.undo_stack:
+        st.session_state.sessions[st.session_state.current_page] = st.session_state.undo_stack.pop()
 
 def total_rotation(session):
     return sum(item[2] for item in session['history'])
@@ -61,7 +60,7 @@ def total_rate(session):
     return total_rotation(session) / (session['total_yen'] / 1000) if session['total_yen'] else 0
 
 # --- UI部分 ---
-st.title("まわるくん風 回転率計算アプリ（Web版）")
+st.title("まわるくん風 回転率計算アプリ（Web版・Undo対応）")
 
 # ページ切り替え
 tab = st.selectbox("ページを選択（1〜5）", options=[1,2,3,4,5], index=0)
