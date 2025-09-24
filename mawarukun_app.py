@@ -1,4 +1,4 @@
-# Streamlit版：回転率計算アプリ（Undo多段 + 継続スタート修正 + やり直しボタン）
+# Streamlit版：回転率計算アプリ（スマホ対応＋ラベル修正）
 import streamlit as st
 import copy
 
@@ -72,6 +72,7 @@ def total_rate(session):
     return total_rotation(session) / (session['total_yen'] / 1000) if session['total_yen'] else 0
 
 # --- UI部分 ---
+st.set_page_config(page_title="回転率計算アプリ", layout="wide")
 st.title("回転率計算アプリ（Web版・Undo/Redo対応）")
 
 # ページ切り替え
@@ -79,38 +80,37 @@ tab = st.selectbox("ページを選択（1〜5）", options=[1,2,3,4,5], index=0
 st.session_state.current_page = tab - 1
 session = get_session()
 
-# 入力欄
-rotation = st.number_input("現在の回転数", min_value=0, step=1)
-yen = st.number_input("補給金額（円）", min_value=0, step=100, value=1000)
+# 入力欄（横並び）
+col1, col2 = st.columns(2)
+with col1:
+    rotation = st.number_input("現在の回転数", min_value=0, step=1)
+with col2:
+    yen = st.number_input("回転数に対応する金額（円）", min_value=0, step=100, value=1000)
 
-# ボタン横並び
-cols = st.columns(6)
-
-with cols[0]:
-    if st.button("補給を記録"):
+# 操作ボタン（横並び）
+btn1, btn2, btn3 = st.columns(3)
+with btn1:
+    if st.button("回転数を記録"):
         backup()
         add_rotation(rotation, yen)
-
-with cols[1]:
+with btn2:
     if st.button("継続スタート"):
         backup()
         continue_from(rotation)
-
-with cols[2]:
+with btn3:
     if st.button("最終行を削除") and session['history']:
         backup()
         delete_last_row()
 
-with cols[3]:
+btn4, btn5, btn6 = st.columns(3)
+with btn4:
     if st.button("履歴をすべてリセット"):
         backup()
         reset_session()
-
-with cols[4]:
+with btn5:
     if st.button("元に戻す（Undo）"):
         restore_undo()
-
-with cols[5]:
+with btn6:
     if st.button("やり直す（Redo）"):
         restore_redo()
 
