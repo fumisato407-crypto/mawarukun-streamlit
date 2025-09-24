@@ -1,4 +1,4 @@
-# Streamlit版：回転率計算アプリ（Undo多段 + 継続スタート修正）
+# Streamlit版：回転率計算アプリ（Undo多段 + 継続スタート修正 + やり直しボタン）
 import streamlit as st
 import copy
 
@@ -16,12 +16,16 @@ if 'current_page' not in st.session_state:
 if 'undo_stack' not in st.session_state:
     st.session_state.undo_stack = []
 
+if 'redo_stack' not in st.session_state:
+    st.session_state.redo_stack = []
+
 # --- ヘルパー関数 ---
 def get_session():
     return st.session_state.sessions[st.session_state.current_page]
 
 def backup():
     st.session_state.undo_stack.append(copy.deepcopy(get_session()))
+    st.session_state.redo_stack.clear()  # Undoした後に新しい操作をしたらRedo履歴は消す
 
 def add_rotation(rotation, yen):
     session = get_session()
@@ -50,8 +54,16 @@ def reset_session():
     }
 
 def restore_undo():
+    session = get_session()
     if st.session_state.undo_stack:
+        st.session_state.redo_stack.append(copy.deepcopy(session))
         st.session_state.sessions[st.session_state.current_page] = st.session_state.undo_stack.pop()
+
+def restore_redo():
+    session = get_session()
+    if st.session_state.redo_stack:
+        st.session_state.undo_stack.append(copy.deepcopy(session))
+        st.session_state.sessions[st.session_state.current_page] = st.session_state.redo_stack.pop()
 
 def total_rotation(session):
     return sum(item[2] for item in session['history'])
@@ -60,7 +72,7 @@ def total_rate(session):
     return total_rotation(session) / (session['total_yen'] / 1000) if session['total_yen'] else 0
 
 # --- UI部分 ---
-st.title("回転率計算アプリ（Web版・Undo対応）")
+st.title("回転率計算アプリ（Web版・Undo/Redo対応）")
 
 # ページ切り替え
 tab = st.selectbox("ページを選択（1〜5）", options=[1,2,3,4,5], index=0)
@@ -72,7 +84,7 @@ rotation = st.number_input("現在の回転数", min_value=0, step=1)
 yen = st.number_input("補給金額（円）", min_value=0, step=100, value=1000)
 
 # ボタン横並び
-cols = st.columns(5)
+cols = st.columns(6)
 
 with cols[0]:
     if st.button("補給を記録"):
@@ -97,6 +109,10 @@ with cols[3]:
 with cols[4]:
     if st.button("元に戻す（Undo）"):
         restore_undo()
+
+with cols[5]:
+    if st.button("やり直す（Redo）"):
+        restore_redo()
 
 # 結果表示
 st.markdown(f"**通算回転数：{total_rotation(session)} 回**")
